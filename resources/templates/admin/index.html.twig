@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+<h3>INDEX - Admin</h3>
+
+{% for post in posts %}
+<div>
+  <h2><a href="post/{{ post.id }}">{{ post.title }}</a></h2>
+  <p>{{ post.content_short }}</p>
+  <p>{{ post.date }}, <a href="author/{{ post.author_id }}">{{ post.name }}</a></p>
+</div>
+{% endfor %}
+
+{% endblock %}

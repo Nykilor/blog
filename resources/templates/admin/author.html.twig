@@ -1,0 +1,18 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+<h1>Author - Admin</h1>
+<div>
+  <h2>{{ author.name }}</h2>
+  <img src="{{author.img_path}}" alt="author">
+  <p>{{ author.about }}</p>
+  <p>{{ author.email }}</p>
+  <h1>POSTS</h1>
+  {% for post in author.posts %}
+  <div>
+    <h2><a href="post/{{ post.id }}">{{ post.title }}</a></h2>
+    <p>{{ post.content_short }}</p>
+    <p>{{ post.date }}, <a href="author/{{ post.author_id }}">{{ post.name }}</a></p>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

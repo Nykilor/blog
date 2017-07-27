@@ -1,0 +1,10 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<h1>Comment - Admin</h1>
+
+<div>
+  <p>{{ comment.content }}</p>
+  <p>{{ comment.date }}, {{ comment.author }}</p>
+</div>
+{% endblock %}

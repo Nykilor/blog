@@ -1,0 +1,25 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+<h3>PANEL - Admin</h3>
+
+<form action="logout" method="post">
+  <input type="submit" name="logout_form" value="LOGOUT">
+</form>
+
+<b>Rewrite on</b>
+<form action="upload/img/1" method="post" enctype="multipart/form-data">
+    Select image to upload(max 5MB, type:jpg,jpeg,png):
+    <input type="file" name="file">
+    <input type="submit" value="Upload Image" name="submit">
+</form>
+
+<b>Rewrite off</b>
+<form action="upload/doc" method="post" enctype="multipart/form-data">
+    Select doc to upload(max 5MB, doc,pdf,txt):
+    <input type="file" name="file">
+    <input type="submit" value="Upload DOC" name="submit">
+</form>
+
+
+
+{% endblock %}

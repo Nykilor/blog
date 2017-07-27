@@ -1,0 +1,22 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+
+{% if post %}
+<h3>POST</h3>
+<div>
+<h1>{{ post.title }}</h1>
+<p>{{ post.content }}</p>
+<p>{{ post.date }}, <a href="author/{{ post.author_id }}">{{ post.name }}</a></p>
+</div>
+{% else %}
+<h3>POSTs</h3>
+  {% for post in posts %}
+  <div>
+    <h2><a href="post/{{ post.id }}">{{ post.title }}</a></h2>
+    <p>{{ post.content_short }}</p>
+    <p>{{ post.date }}, <a href="author/{{ post.author_id }}">{{ post.name }}</a></p>
+  </div>
+  {% endfor %}
+{% endif %}
+
+{% endblock %}
