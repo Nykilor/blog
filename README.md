@@ -17,9 +17,9 @@
 ---------------------------------------
 Basic routes:
 -------------------------------
-* post/id 
+* post/id, post/slug-title
 * post, post?page=(int), post?limit=(int) (base limit is 10)
-* author/id 
+* author/id, author/slug-name
 * comment/id
 * index
 * panel
@@ -27,21 +27,24 @@ Basic routes:
 
 **Json routes:**
 
-* json/post/id
+* json/post/id, json/post/slug-title
 * json/post, json/post?page=(int), post?limit=(int)
-* json/author/id
+* json/author/id, json/author/slug
 * json/comment/id
 
-POST routes (ajax ready):
+POST routes:
 -------------------------------
-* edit/post/id
-* create/[post,author,comment]
-* delete/[post,author,comment]/id
-* edit_self/post/id
+* comment
+* author
+* post
 * upload/[doc,img]/[1,0] (to turn on/off rewrite)
 * logout
 
+PUT, DELETE routes:
 ---------------------------------
+* comment
+* author
+* post
 
 Model methods
 ===============
@@ -63,6 +66,4 @@ POST
 * **createOne(route, post_data)** - creates a database entity (look at config.php 'routes', default ones are 'author', 'post', 'comment') the 'post_data' is an array: ['column' => 'value', 'column' => 'value' ...].
 * **deleteOne(route, id)** - deletes an entity at route.
 * **editOne(route, id, post_data, author_id = 0)** - edits the entity at route.
-Still work in progress:
--------------------------------------------
-* Basic examples.
+* **createColums(post_data, route)** - returns [columns, values] for calling method. 
