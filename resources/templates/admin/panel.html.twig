@@ -5,21 +5,46 @@
 <form action="logout" method="post">
   <input type="submit" name="logout_form" value="LOGOUT">
 </form>
-
+<hr>
+<h2>UPLOAD</h2>
 <b>Rewrite on</b>
 <form action="upload/img/1" method="post" enctype="multipart/form-data">
     Select image to upload(max 5MB, type:jpg,jpeg,png):
     <input type="file" name="file">
-    <input type="submit" value="Upload Image" name="submit">
+    <input type="submit" value="Upload Image" name="upload_form">
 </form>
-
+<hr>
 <b>Rewrite off</b>
 <form action="upload/doc" method="post" enctype="multipart/form-data">
     Select doc to upload(max 5MB, doc,pdf,txt):
     <input type="file" name="file">
-    <input type="submit" value="Upload DOC" name="submit">
+    <input type="submit" value="Upload DOC" name="upload_form">
+</form>
+<hr>
+
+<h2>POST</h2>
+<form class="ajax" action="post" method="post">
+  Title: <input type="text" name="title" value="">
+  Content: <input type="text" name="content" value="">
+  Content Short: <input type="text" name="content_short" value="">
+  Thumbnail Path: <input type="text" name="thumbnail_path" value="">
+  <input type="submit" name="POST" value="POST">
+</form>
+
+<h2>AUTHOR</h2>
+<form class="ajax" action="author" method="post">
+  Name: <input type="text" name="name" value="">
+  email: <input type="email" name="email" value="">
+  img_path: <input type="text" name="img_path" value="">
+  about: <input type="text" name="about" value="">
+  access_type: <input type="number" name="access_type" value="">
+  login: <input type="text" name="login" value="">
+  password: <input type="text" name="password" value="">
+  <input type="submit" name="POST" value="POST">
 </form>
 
 
-
+{% endblock %}
+{% block script %}
+<script src="js/script.js"></script>
 {% endblock %}

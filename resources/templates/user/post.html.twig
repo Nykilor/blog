@@ -6,15 +6,28 @@
 <div>
 <h1>{{ post.title }}</h1>
 <p>{{ post.content }}</p>
-<p>{{ post.date }}, <a href="author/{{ post.author_id }}">{{ post.name }}</a></p>
+<p>{{ post.date }}, <a href="author/{{ post.name|replace({" ": "-"})  }}">{{ post.name }}</a></p>
+</div>
+<h3>Comments</h3>
+{% if comments %}
+<div>
+  {% for comment in comments %}
+    <div>
+      <p>{{ comment.content }}</p>
+      <p>{{ comment.date }}, {{ comment.author }}</p>
+    </div>
+  {% endfor %}
 </div>
 {% else %}
-<h3>POSTs</h3>
+  <p>No comments so far.</p>
+{% endif %}
+{% else %}
+<h3>POSTs - Admin</h3>
   {% for post in posts %}
   <div>
-    <h2><a href="post/{{ post.id }}">{{ post.title }}</a></h2>
+    <h2><a href="post/{{ post.title_slug }}">{{ post.title }}</a></h2>
     <p>{{ post.content_short }}</p>
-    <p>{{ post.date }}, <a href="author/{{ post.author_id }}">{{ post.name }}</a></p>
+    <p>{{ post.date }}, <a href="author/{{ post.name|replace({" ": "-"}) }}">{{ post.name }}</a></p>
   </div>
   {% endfor %}
 {% endif %}

@@ -4,59 +4,68 @@ namespace Core\Controller;
 use \Core as Core;
 
 use Core\Session as Session;
-use Core\Files as Files;
+use Core\FilesUpload as FilesUpload;
 
 class POST extends Core\Model\POST implements ControllerInterface {
 
         public static $access_type;
         public static $author_id;
-        private $post_data;
+        private $data;
         private $method;
         private $route;
         private $var;
         private $a_privilage;
         private $method_only = ['logout'];
+        private $http;
 
 
-        public function __construct(string $url, $config, $post_data = null) {
+        public function __construct(string $url, $config) {
             if(!isset($_SESSION)) {
                 session_start();
             }
+            if($_SERVER['REQUEST_METHOD'] === 'POST') {
+                $this->data = $_POST;
+            } else if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
+                $this->data = explode("&", file_get_contents('php://input'));
+                foreach ($this->data as $key => $value) {
+                    $var = explode("=", $value);
+                    unset($this->data[$key]);
+                    $this->data[$var[0]] = $var[1];
+                }
+            }
+
+            $this->http = $config['http'];
             $this->a_files = $config['files'];
             $this->a_privilage = $config['access_types'];
-            $this->post_data = $post_data;
             $this->checkPrivilage();
             $this->route($url);
         }
 
+        //triggered by PUT
         public function edit() {
-            if($this->post_data && $this->var > 0) {
-                $this->editOne($this->route, $this->var, $this->post_data);
+            if($this->data && $this->var[0] > 0 && in_array(__FUNCTION__, $this->a_privilage[self::$access_type])) {
+                $this->editOne($this->route, $this->var, $this->data);
+            } else if (in_array(__FUNCTION__."_own", $this->a_privilage[self::$access_type])){
+                $this->editOne($this->route, $this->var[0], $this->data, self::$author_id);
             } else {
                 http_response_code(400);
             }
         }
 
-        public function edit_self() {
-            if($this->post_data && $this->var > 0 && $this->route !== "author") {
-                $this->editOne($this->route, $this->var, $this->post_data, self::$author_id);
-            } else {
-                http_response_code(400);
-            }
-        }
-
+        //triggered by DELETE
         public function delete() {
             if($this->var > 0) {
-                $this->deleteOne($this->route, $this->var);
+                $this->deleteOne($this->route, $this->var[0]);
             } else {
                 http_response_code(400);
             }
         }
 
+        //triggered by POST
         public function create() {
-            if($this->post_data) {
+            if($this->data) {
                 if(in_array($this->route, $this->a_privilage[self::$access_type][__FUNCTION__])) {
-                    $this->createOne($this->route, $this->post_data);
+                    $this->createOne($this->route, $this->data);
                 } else {
                     http_response_code(403);
                 }
@@ -65,12 +74,15 @@ class POST extends Core\Model\POST implements ControllerInterface {
             }
         }
 
+        //triggered by $_POST['logout_form']
         public function logout() {
             $s = new Session($_POST, false);
         }
 
+        //triggered by $_POST['upload_form']
         public function upload() {
-            $file = new Files($this->a_files, $_FILES, $this->route, $this->var);
+            $file = new FilesUpload($this->a_files, $_FILES, $this->var[0], $this->var[1]);
+            $file->check()->upload();
         }
 
         // np. domain.com/post/1, domain.com/author/1
@@ -78,21 +90,41 @@ class POST extends Core\Model\POST implements ControllerInterface {
             $url = str_replace("/blog/", "", $url);
             $v = explode("/", $url);
 
-            $this->setOrExit("method", $v, 0);
+            foreach ($v as $key => $value) {
+                switch ($key) {
+                    case 0:
+                        $this->setOrExit("route", $v, 0);
+                        break;
+                    default:
+                        $this->var[] = $value;
+                        break;
+                }
+            }
 
+            $this->setOrExit("route", $v, 0);
+
+            //sets method, either the method is from config or form
+            if(isset($this->data[$this->route."_form"])) {
+                $this->method = $this->route;
+            } else if (array_key_exists($_SERVER['REQUEST_METHOD'], $this->http)) {
+                $this->method = $this->http[$_SERVER['REQUEST_METHOD']];
+            } else {
+                http_response_code(400);
+                exit();
+            }
+
+            //finish early if is in method_only;
             if(in_array($this->method, $this->method_only)) {
                 $this->{$this->method}();
+                return;
             }
 
-            $this->setOrExit("route", $v, 1);
-
-            if(!empty($v[2]) && intval($v[2]) > 0) {
-                $this->var = intval($v[2]);
-            } else {
-                $this->var = 0;
-            }
-
-            if(method_exists($this, $this->method) && (in_array($this->method, $this->a_privilage[self::$access_type]) OR array_key_exists($this->method, $this->a_privilage[self::$access_type]))) {
+            //check if method exists and the user has privilage to use it
+            if(
+                method_exists($this, $this->method) &&
+                (in_array($this->method, $this->a_privilage[self::$access_type]) OR
+                array_key_exists($this->method, $this->a_privilage[self::$access_type]))
+            ) {
                 $this->{$this->method}();
             } else if (method_exists($this, $this->method)) {
                 http_response_code(403);

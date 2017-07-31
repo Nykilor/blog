@@ -9,9 +9,9 @@
   <h1>POSTS</h1>
   {% for post in author.posts %}
   <div>
-    <h2><a href="post/{{ post.id }}">{{ post.title }}</a></h2>
+    <h2><a href="post/{{ post.title_slug }}">{{ post.title }}</a></h2>
     <p>{{ post.content_short }}</p>
-    <p>{{ post.date }}, <a href="author/{{ post.author_id }}">{{ post.name }}</a></p>
+    <p>{{ post.date }}</p>
   </div>
   {% endfor %}
 </div>

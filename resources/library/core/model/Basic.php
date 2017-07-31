@@ -22,9 +22,14 @@ class Basic extends DB {
       self::$content["posts"] =  DB::$connection->query($sql)->fetchAll(PDO::FETCH_ASSOC);
   }
 
-  protected function getOnePost(int $id) {
-      $stmt = DB::$connection->prepare("SELECT post.id, post.content, post.date, post.title, post.author_id, author.name FROM post,author WHERE post.id=:id AND author.id = post.author_id");
-      $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+  protected function getOnePost($id) {
+      if(filter_var($id, FILTER_VALIDATE_INT)) {
+          $sql = "SELECT post.id, post.content, post.date, post.title, post.title_slug, post.author_id, author.name FROM post,author WHERE post.id=:id AND author.id = post.author_id";
+      } else {
+          $sql = "SELECT post.id, post.content, post.date, post.title, post.title_slug, post.author_id, author.name FROM post,author WHERE post.title_slug=:id AND author.id = post.author_id";
+      }
+      $stmt = DB::$connection->prepare($sql);
+      $stmt->bindParam(":id", $id);
       $stmt->execute();
       self::$content["post"] =  $stmt->fetch(PDO::FETCH_ASSOC);
   }
@@ -37,23 +42,33 @@ class Basic extends DB {
   }
 
   protected function getAllComments(int $id) {
-      $stmt = DB::$connection->prepare("SELECT id,content,author,date FROM comment WHERE post_id=:id");
+      $stmt = DB::$connection->prepare("SELECT id,content,author,date FROM comment WHERE post_id=:id ORDER BY date DESC");
       $stmt->bindParam(":id", $id, PDO::PARAM_INT);
       $stmt->execute();
       self::$content["comments"] =  $stmt->fetchAll(PDO::FETCH_ASSOC);
   }
 
-  protected function getAuthorPage(int $id) {
-      $stmt = DB::$connection->prepare("SELECT id, content, date, title, author_id FROM post WHERE author_id = :id");
-      $stmt->bindParam(":id", $id, PDO::PARAM_INT);
-      $stmt->execute();
+  protected function getAuthorPage($id) {
+      if(filter_var($id, FILTER_VALIDATE_INT)) {
+          $sql = "SELECT id, name, email, img_path, about FROM author WHERE id = :id";
+      } else {
+          $sql = "SELECT id, name, email, img_path, about FROM author WHERE name = :id";
+          $id = str_replace("-", " ", $id);
+      }
 
-      $stmt2 = DB::$connection->prepare("SELECT id, name, email, img_path, about FROM author WHERE id = :id");
-      $stmt2->bindParam(":id", $id, PDO::PARAM_INT);
+      $stmt2 = DB::$connection->prepare($sql);
+      $stmt2->bindParam(":id", $id);
       $stmt2->execute();
 
-      if($stmt->rowCount() > 0) self::$content["author"] = $stmt2->fetch(PDO::FETCH_ASSOC);
-      if($stmt2->rowCount() > 0) self::$content["author"]["posts"] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+      if($stmt2->rowCount() > 0) {
+          self::$content["author"] = $stmt2->fetch(PDO::FETCH_ASSOC);
+
+          $stmt = DB::$connection->prepare("SELECT id, content, date, title, title_slug, author_id FROM post WHERE author_id = :id ORDER BY date DESC");
+          $stmt->bindParam(":id", self::$content["author"]["id"], PDO::PARAM_INT);
+          $stmt->execute();
+
+          if($stmt->rowCount() > 0) self::$content["author"]["posts"] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+      }
   }
 
   protected function searchFor(array $what) {
@@ -89,6 +104,5 @@ class Basic extends DB {
           $stmt = DB::$connection->query("SELECT post.*,author.name,author.id AS author_id FROM post,author WHERE author.id = post.author_id AND $where_after");
           self::$content["posts"] =  $stmt->fetchAll(PDO::FETCH_ASSOC);
       }
-      var_dump(self::$content);
   }
 }

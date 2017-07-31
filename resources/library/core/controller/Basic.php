@@ -66,11 +66,13 @@ class Basic extends Model implements ControllerInterface {
       }
   }
 
-  public function post(array $var) {
-      if($var['id'] !== 0) {
-         $this->getOnePost($var['id']);
+  public function post() {
+      if(isset($this->var[0]) && !empty($this->var[0])) {
+         $this->getOnePost($this->var[0]);
          $this->checkIfDataExists("post");
-         $this->getAllComments($var['id']);
+         if(isset(Model::$content["post"])) {
+            $this->getAllComments( Model::$content["post"]["id"] );
+         }
      } else {
          $l_o = $this->pagination();
          $this->getAllPosts($l_o['limit'], $l_o['offset']);
@@ -78,18 +80,28 @@ class Basic extends Model implements ControllerInterface {
      }
   }
 
-  public function comment(array $var) {
-    $this->getOneComment($var['id']);
-    $this->checkIfDataExists("comment");
+  public function comment() {
+    if(isset($this->var[0])) {
+        $this->getOneComment($this->var[0]);
+        $this->checkIfDataExists("comment");
+    } else {
+        $this->type = "index";
+        $this->index();
+    }
   }
 
-  public function author(array $var) {
-     $this->getAuthorPage($var['id']);
-     $this->checkIfDataExists("author");
+  public function author() {
+      if(isset($this->var[0])) {
+          $this->getAuthorPage($this->var[0]);
+          $this->checkIfDataExists("author");
+      } else {
+          $this->type = "index";
+          $this->index();
+      }
   }
 
   public function panel() {
-    Model::$content = [];
+    Model::$content = ["session" => $_SESSION];
   }
 
   public function error() {
@@ -99,6 +111,26 @@ class Basic extends Model implements ControllerInterface {
   public function route(string $url) {
       $url = str_replace("/blog/", "", $url);
       $v = explode("/", $url);
+
+      foreach ($v as $key => $value) {
+          switch ($key) {
+              case 0:
+                  if($value !== "json") {
+                      $this->type = $value;
+                  } else {
+                      $this->type = $v[$key+1];
+                  }
+                  break;
+              default:
+                  if($v[0] === "json" && isset($v[$key+1])) {
+                      $this->var[] = $v[$key+1];
+                  } else if($v[0] !== "json") {
+                      $this->var[] = $value;
+                  }
+                  break;
+          }
+      }
+
       if($v[0] === "json" && !empty($v[1])) {
           $this->type = $v[1];
           $this->var['id'] = (isset($v[2])) ? intval($v[2]) : 0;
@@ -108,7 +140,7 @@ class Basic extends Model implements ControllerInterface {
           $this->var['id'] = (isset($v[1])) ? intval($v[1]) : 0;
       }
     if(method_exists($this, $this->type)) {
-        $this->{$this->type}($this->var);
+        $this->{$this->type}();
     } else {
       $this->type = "index";
       $this->index();
@@ -133,11 +165,11 @@ class Basic extends Model implements ControllerInterface {
   }
 
   private function checkIfDataExists(string $data_type) {
-      if($this->json && !self::$content[$data_type]) {
+      if($this->json && empty(self::$content[$data_type])) {
           http_response_code(404);
           exit();
       }
-      if(!self::$content[$data_type]) {
+      if(empty(self::$content[$data_type])) {
           http_response_code(404);
           $this->type = "404";
           $this->user_type = "errorCode";

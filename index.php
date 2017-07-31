@@ -8,10 +8,10 @@
     //TODO: categories, tags, search, basic templates
 
     //$_SESSION['access_type'] = 1;
-
-    if(!empty($_POST)) {
+    $methods = $config['http'];
+    if(!empty($_POST) OR array_key_exists($_SERVER['REQUEST_METHOD'], $methods)) {
         $m = new Core\Model\POST($config);
-        $c = new Core\Controller\POST($_SERVER['REQUEST_URI'], $config, $_POST);
+        $c = new Core\Controller\POST($_SERVER['REQUEST_URI'], $config);
     } else {
         $m = new Core\Model\Basic($config);
         $c = new Core\Controller\Basic($_SERVER['REQUEST_URI']);

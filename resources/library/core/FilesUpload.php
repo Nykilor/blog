@@ -1,7 +1,7 @@
 <?php
 namespace Core;
 
-class Files {
+class FilesUpload {
 
     const DIRPATH = __DIR__."/../../";
 
@@ -20,11 +20,9 @@ class Files {
         $this->file = $file;
         $this->file_type = $file_type;
         $this->allowed_file_types = (isset($config[$file_type])) ? $config[$file_type] : $this->terminate();
-        $this->check()->upload();
     }
 
-
-    private function check() {
+    public function check() {
         $file_name = $this->file['file']['name'];
         $file_size = $this->file['file']['size'];
         $file_type = $this->file['file']['type'];
@@ -56,7 +54,7 @@ class Files {
         return $this;
     }
 
-    private function upload() {
+    public function upload() {
         if(move_uploaded_file($this->file_tmp, self::DIRPATH.$this->file_type."/".$this->file['file']['name'])) {
             http_response_code(201);
             echo "The file ". basename( $this->file["file"]["name"]). " has been uploaded.";

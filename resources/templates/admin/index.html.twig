@@ -4,9 +4,9 @@
 
 {% for post in posts %}
 <div>
-  <h2><a href="post/{{ post.id }}">{{ post.title }}</a></h2>
+  <h2><a href="post/{{ post.title_slug }}">{{ post.title|raw }}</a></h2>
   <p>{{ post.content_short }}</p>
-  <p>{{ post.date }}, <a href="author/{{ post.author_id }}">{{ post.name }}</a></p>
+  <p>{{ post.date }}, <a href="author/{{ post.name|replace({" ": "-"}) }}">{{ post.name }}</a></p>
 </div>
 {% endfor %}
 
